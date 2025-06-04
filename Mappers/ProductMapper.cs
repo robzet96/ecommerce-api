@@ -18,19 +18,5 @@ namespace ecommerceAPI.Mappers
                 IsAvailable = product.IsAvailable
             };
         }
-        public static Order ToEntity(this CreateOrderDto dto)
-        {
-            return new Order
-            {
-                UserId = dto.UserId,
-                OrderDate = DateTime.UtcNow,
-                Status = OrderStatus.Pending,
-                OrderProducts = dto.Products.Select(p => new OrderProduct
-                {
-                    ProductId = p.ProductId,
-                    Quantity = p.Quantity
-                }).ToList()
-            };
-        }
     }
 }
