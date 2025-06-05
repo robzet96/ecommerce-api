@@ -21,7 +21,21 @@ namespace ecommerceAPI.Services
                 UserId = dto.UserId,
                 OrderDate = DateTime.UtcNow,
                 Status = Enums.OrderStatus.Pending,
+                OrderProducts = new List<OrderProduct>()
             };
+
+            foreach (var item in dto.Products)
+            {
+                var product = await _productRepository.GetByIdAsync(item.ProductId);
+                if (product == null)
+                    throw new Exception($"Product with ID {item.ProductId} not found.");
+
+                order.OrderProducts.Add(new OrderProduct
+                {
+                    ProductId = product.Id,
+                    Quantity = item.Quantity
+                });
+            }
 
             var result = await _orderRepository.AddAsync(order);
             return OrderMapper.ToDto(result);
@@ -137,6 +151,13 @@ namespace ecommerceAPI.Services
 
                 foreach (var item in dto.Products)
                 {
+                    if (item.ProductId <= 0 || item.Quantity <= 0)
+                        throw new Exception("Invalid product data: ProductId and Quantity must be greater than 0.");
+
+                    var product = await _productRepository.GetByIdAsync(item.ProductId);
+                    if (product == null)
+                        throw new Exception($"Product with ID {item.ProductId} does not exist.");
+
                     order.OrderProducts.Add(new OrderProduct
                     {
                         OrderId = order.Id,
@@ -148,6 +169,11 @@ namespace ecommerceAPI.Services
 
             var updated = await _orderRepository.UpdateAsync(order);
             return OrderMapper.ToDto(updated);
+        }
+        public async Task<IEnumerable<OrderDto>> GetOrdersByUserIdAsync(int userId)
+        {
+            var orders = await _orderRepository.GetOrdersByUserIdAsync(userId);
+            return orders.Select(OrderMapper.ToDto);
         }
     }
 }

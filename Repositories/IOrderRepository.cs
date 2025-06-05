@@ -8,5 +8,6 @@ namespace ecommerceAPI.Repositories
         Task<IEnumerable<Order>> GetOrdersByDateRangeAsync(DateTime startDate, DateTime endDate);
         Task<IEnumerable<Order>> GetOrdersContainingProductAsync(int productId);
         Task<IEnumerable<Order>> GetOrdersContainingProductByNameAsync(string productName);
+        Task<IEnumerable<Order>> GetOrdersByUserIdAsync(int userId);
     }
 }

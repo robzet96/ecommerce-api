@@ -67,7 +67,7 @@ namespace ecommerceAPI.Services
         public async Task<string?> LoginAsync(LoginRequestDto dto)
         {
             var person = (await _personRepository.SearchByEmailAsync(dto.Email)).FirstOrDefault();
-            if (person == null || _jwtService.VerifyPassword(dto.Password, person.Password)) return null;
+            if (person == null || !_jwtService.VerifyPassword(dto.Password, person.Password)) return null;
 
             return _jwtService.GenerateToken(person);
         }
@@ -87,7 +87,7 @@ namespace ecommerceAPI.Services
                 Email = dto.Email,
                 Password = _jwtService.HashPassword(dto.Password),
                 Address = dto.Address,
-                Role = dto.Role
+                Role = "User"
             };
             await _personRepository.AddAsync(user);
             return PersonMapper.ToDto(user);
@@ -122,10 +122,17 @@ namespace ecommerceAPI.Services
             var person = await _personRepository.GetByIdAsync(id);
             if (person == null) return null;
 
-            person.Name = dto.Name;
-            person.LastName = dto.Lastname;
-            person.Email = dto.Email;
-            person.Role = dto.Role;
+            if (!string.IsNullOrWhiteSpace(dto.Name))
+                person.Name = dto.Name;
+
+            if (!string.IsNullOrWhiteSpace(dto.Lastname))
+                person.LastName = dto.Lastname;
+
+            if (!string.IsNullOrWhiteSpace(dto.Email))
+                person.Email = dto.Email;
+            if (!string.IsNullOrWhiteSpace(dto.Role))
+                person.Role = dto.Role;
+
 
             if (!string.IsNullOrWhiteSpace(dto.Password))
             {
@@ -145,9 +152,14 @@ namespace ecommerceAPI.Services
             var person = await _personRepository.GetByIdAsync(Id);
             if (person == null) return null;
 
-            person.Name = dto.Name;
-            person.LastName = dto.Lastname;
-            person.Email = dto.Email;
+            if (!string.IsNullOrWhiteSpace(dto.Name))
+                person.Name = dto.Name;
+
+            if (!string.IsNullOrWhiteSpace(dto.Lastname))
+                person.LastName = dto.Lastname;
+
+            if (!string.IsNullOrWhiteSpace(dto.Email))
+                person.Email = dto.Email;
 
             if (!string.IsNullOrWhiteSpace(dto.Password))
                 person.Password = _jwtService.HashPassword(dto.Password);

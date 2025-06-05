@@ -11,5 +11,6 @@ namespace ecommerceAPI.Services
         Task<IEnumerable<OrderDto>> GetOrdersByDateRangeAsync(DateTime startDate, DateTime endDate);
         Task<IEnumerable<OrderDto>> GetOrdersContainingProductAsync(int productId);
         Task<IEnumerable<OrderDto>> GetOrdersContainingProductByNameAsync(string productName);
+        Task<IEnumerable<OrderDto>> GetOrdersByUserIdAsync(int userId);
     }
 }

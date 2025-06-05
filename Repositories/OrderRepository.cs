@@ -1,7 +1,6 @@
 ﻿using ecommerceAPI.Data;
 using ecommerceAPI.Models;
 using Microsoft.EntityFrameworkCore;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ecommerceAPI.Repositories
 {
@@ -16,7 +15,11 @@ namespace ecommerceAPI.Repositories
         {
             _dbContext.Orders.Add(entity);
             await _dbContext.SaveChangesAsync();
-            return entity;
+
+            return await _dbContext.Orders
+                .Include(o => o.OrderProducts)
+                    .ThenInclude(op => op.Product)
+                .FirstAsync(o => o.Id == entity.Id);
         }
 
         public async Task<bool> DeleteAsync(int Id)
@@ -31,7 +34,11 @@ namespace ecommerceAPI.Repositories
 
         public async Task<IEnumerable<Order>> GetAllAsync()
         {
-            return await _dbContext.Orders.AsNoTracking().ToListAsync();
+            return await _dbContext.Orders
+            .AsNoTracking()
+            .Include(o => o.OrderProducts)
+                .ThenInclude(op => op.Product)
+            .ToListAsync();
         }
 
         public async Task<Order?> GetByIdAsync(int Id)
@@ -47,6 +54,8 @@ namespace ecommerceAPI.Repositories
         {
             return await _dbContext.Orders
             .AsNoTracking()
+            .Include(o => o.OrderProducts)
+                .ThenInclude(op => op.Product)
             .Where(o => o.OrderDate.Date == date.Date)
             .ToListAsync();
         }
@@ -54,7 +63,9 @@ namespace ecommerceAPI.Repositories
         public async Task<IEnumerable<Order>> GetOrdersByDateRangeAsync(DateTime startDate, DateTime endDate)
         {
             return await _dbContext.Orders
-             .AsNoTracking()
+            .AsNoTracking()
+            .Include(o => o.OrderProducts)
+                .ThenInclude(op => op.Product)
             .Where(o => o.OrderDate >= startDate && o.OrderDate <= endDate)
             .ToListAsync();
         }
@@ -62,10 +73,11 @@ namespace ecommerceAPI.Repositories
         public async Task<IEnumerable<Order>> GetOrdersContainingProductAsync(int productId)
         {
             return await _dbContext.Orders
-             .AsNoTracking()
-             .Include(o => o.OrderProducts)
-             .Where(o => o.OrderProducts.Any(op => op.ProductId == productId))
-             .ToListAsync();
+                .AsNoTracking()
+                .Include(o => o.OrderProducts)
+                    .ThenInclude(op => op.Product)
+                .Where(o => o.OrderProducts.Any(op => op.ProductId == productId))
+                .ToListAsync();
         }
 
         public async Task<IEnumerable<Order>> GetOrdersContainingProductByNameAsync(string productName)
@@ -84,6 +96,14 @@ namespace ecommerceAPI.Repositories
             _dbContext.Entry(entity).State = EntityState.Modified;
             await _dbContext.SaveChangesAsync();
             return entity;
+        }
+        public async Task<IEnumerable<Order>> GetOrdersByUserIdAsync(int userId)
+        {
+            return await _dbContext.Orders
+            .Where(o => o.UserId == userId)
+            .Include(o => o.OrderProducts)
+                .ThenInclude(op => op.Product)
+            .ToListAsync();
         }
     }
 }
